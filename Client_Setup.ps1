@@ -1,5 +1,5 @@
 # ==================================================
-# CLIENT PC AUTO SETUP FOR LAB MANAGEMENT + WIFI
+# CLIENT PC AUTO SETUP (FINAL SAFE VERSION)
 # ==================================================
 # Run as Administrator
 # ==================================================
@@ -74,46 +74,46 @@ Write-Host "✔ Token filtering disabled" -ForegroundColor Green
 
 
 # -------------------------------
-# 5. Create WiFi Profile (FTSA Lab)
+# 5. Create WiFi Profile (SAFE WAY)
 # -------------------------------
 
-$WifiProfile = @"
-<?xml version="1.0"?>
-<WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
-    <name>$WifiName</name>
-    <SSIDConfig>
-        <SSID>
-            <name>$WifiName</name>
-        </SSID>
-    </SSIDConfig>
-    <connectionType>ESS</connectionType>
-    <connectionMode>auto</connectionMode>
-    <MSM>
-        <security>
-            <authEncryption>
-                <authentication>WPA2PSK</authentication>
-                <encryption>AES</encryption>
-                <useOneX>false</useOneX>
-            </authEncryption>
-            <sharedKey>
-                <keyType>passPhrase</keyType>
-                <protected>false</protected>
-                <keyMaterial>$WifiPass</keyMaterial>
-            </sharedKey>
-        </security>
-    </MSM>
-</WLANProfile>
-"@
+$WifiProfile = @(
+'<?xml version="1.0"?>',
+'<WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">',
+"    <name>$WifiName</name>",
+'    <SSIDConfig>',
+'        <SSID>',
+"            <name>$WifiName</name>",
+'        </SSID>',
+'    </SSIDConfig>',
+'    <connectionType>ESS</connectionType>',
+'    <connectionMode>auto</connectionMode>',
+'    <MSM>',
+'        <security>',
+'            <authEncryption>',
+'                <authentication>WPA2PSK</authentication>',
+'                <encryption>AES</encryption>',
+'                <useOneX>false</useOneX>',
+'            </authEncryption>',
+'            <sharedKey>',
+'                <keyType>passPhrase</keyType>',
+'                <protected>false</protected>',
+"                <keyMaterial>$WifiPass</keyMaterial>",
+'            </sharedKey>',
+'        </security>',
+'    </MSM>',
+'</WLANProfile>'
+) -join "`r`n"
 
 
 $TempProfile = "$env:TEMP\FTSA_WIFI.xml"
+
 $WifiProfile | Set-Content $TempProfile -Encoding UTF8
 
 netsh wlan add profile filename="$TempProfile" user=all | Out-Null
 netsh wlan connect name="$WifiName" | Out-Null
 
 Remove-Item $TempProfile -Force
-
 
 Write-Host "✔ WiFi profile added: $WifiName" -ForegroundColor Green
 
@@ -141,7 +141,7 @@ Write-Host "✔ PowerShell Remoting enabled" -ForegroundColor Green
 
 
 # -------------------------------
-# 8. Enable Firewall
+# 8. Enable Firewall Rules
 # -------------------------------
 
 Enable-NetFirewallRule -DisplayGroup "Windows Remote Management" | Out-Null
@@ -183,6 +183,7 @@ Write-Host "=================================" -ForegroundColor Cyan
 Write-Host "Client setup complete." -ForegroundColor Green
 Write-Host "Reboot recommended." -ForegroundColor Yellow
 Write-Host "=================================" -ForegroundColor Cyan
+
 
 Read-Host "`nPress ENTER to restart"
 
