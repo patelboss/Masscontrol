@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-title Lab Setup Launcher
+title Master Setup Launcher
 
 :: 1. Check for Admin privileges
 NET SESSION >nul 2>&1
