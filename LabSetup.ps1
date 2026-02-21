@@ -113,6 +113,9 @@ $Apps = @(
 
     @{Name="Google Chrome"; File="chrome.exe"; Args="/silent /install"}
     @{Name="Net Speed"; File="netspeed.msixbundle"; Args=""}
+    @{Name="ChatGPT"; File="gpt.msixbundle"; Args=""}
+    @{Name="Firefox"; File="firefox.msix"; Args=""}
+    
 
     @{Name="Klavaro"; File="klavaro.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
     @{Name="LocalSend"; File="localsend.exe"; Args="/VERYSILENT"}
