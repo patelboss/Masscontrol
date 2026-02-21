@@ -1,0 +1,99 @@
+# ==================================================
+# INSTALLER SWITCH DETECTIVE
+# Scans .exe files to find their silent switches
+# ==================================================
+
+# --- CONFIGURATION ---
+$InstallDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Definition }
+
+# List of files to check (Matches your App list)
+$FilesToCheck = @(
+    "vc.exe", "klavaro.exe", "localsend.exe", "npp.exe", 
+    "rapidtyping.exe", "soni.exe", "sonma.exe", "tipp10.exe", 
+    "telegram.exe", "chrome.exe"
+)
+
+Function Get-InstallerType {
+    Param([string]$FilePath)
+
+    if ($FilePath.EndsWith(".msi")) { return "MSI" }
+    if ($FilePath.EndsWith(".msixbundle") -or $FilePath.EndsWith(".appx")) { return "Appx/MSIX" }
+
+    # Read the first 50KB and last 50KB of the file as text to find signatures
+    try {
+        $Stream = [System.IO.File]::OpenRead($FilePath)
+        $Reader = New-Object System.IO.StreamReader($Stream, [System.Text.Encoding]::Default)
+        
+        # Read Start of file
+        $BufferStart = New-Object char[] 40000
+        $Reader.Read($BufferStart, 0, 40000) | Out-Null
+        $Header = -join $BufferStart
+
+        # Read End of file (Inno Setup often hides signature here)
+        $Stream.Seek(-40000, [System.IO.SeekOrigin]::End) | Out-Null
+        $BufferEnd = New-Object char[] 40000
+        $Reader.Read($BufferEnd, 0, 40000) | Out-Null
+        $Footer = -join $BufferEnd
+        
+        $Reader.Close()
+        $Stream.Close()
+
+        # --- SIGNATURE CHECKS ---
+        if ($Header -match "Inno Setup" -or $Footer -match "Inno Setup") { return "Inno Setup" }
+        if ($Header -match "Nullsoft" -or $Header -match "NSIS") { return "NSIS (Nullsoft)" }
+        if ($Header -match "InstallShield") { return "InstallShield" }
+        if ($Header -match "7-Zip" -or $Header -match "7z") { return "7-Zip SFX" }
+        if ($Header -match "WiX") { return "WiX Burn" }
+        
+        return "Unknown"
+    }
+    catch {
+        return "ErrorReading"
+    }
+}
+
+Write-Host "`n--- SCANNING INSTALLERS ---`n" -ForegroundColor Cyan
+
+foreach ($File in $FilesToCheck) {
+    $FullPath = Join-Path $InstallDir $File
+
+    if (Test-Path $FullPath) {
+        $Type = Get-InstallerType -FilePath $FullPath
+        
+        switch ($Type) {
+            "Inno Setup" { 
+                $Switch = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" 
+                $Color = "Green"
+            }
+            "NSIS (Nullsoft)" { 
+                $Switch = "/S" 
+                $Color = "Magenta"
+            }
+            "InstallShield" { 
+                $Switch = "/s /v`"/qn`"" 
+                $Color = "Yellow"
+            }
+            "MSI" { 
+                $Switch = "/qn /norestart" 
+                $Color = "White"
+            }
+            "Appx/MSIX" {
+                $Switch = "(Use DISM or Add-AppxPackage)"
+                $Color = "DarkGray"
+            }
+            Default { 
+                $Switch = "Try: /S, /quiet, or /silent (Unknown Engine)" 
+                $Color = "Red"
+            }
+        }
+
+        Write-Host "$($File.PadRight(20)) -> [$Type]" -ForegroundColor $Color -NoNewline
+        Write-Host " use: $Switch" -ForegroundColor Gray
+    }
+    else {
+        Write-Host "MISSING: $File" -ForegroundColor DarkRed
+    }
+}
+
+Write-Host "`nDone! Copy these switches to your main script.`n" -ForegroundColor Cyan
+
