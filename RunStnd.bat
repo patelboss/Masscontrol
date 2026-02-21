@@ -26,6 +26,7 @@ IF %ERRORLEVEL% EQU 0 (
 set "CUR_DIR=%~dp0"
 
 set "GPEDIT_FILE=%CUR_DIR%gpedit-enabler.bat"
+set "SSH_FILE=%CUR_DIR%enablessh.ps1"
 set "PS_FILE=%CUR_DIR%Noinstallation.ps1"
 
 
@@ -37,12 +38,12 @@ echo.
 
 
 :: ----------------------------------------
-:: Run gpedit enabler first
+:: Run gpedit enabler
 :: ----------------------------------------
 
 if exist "%GPEDIT_FILE%" (
 
-    echo [1/2] Running gpedit enabler...
+    echo [1/3] Running gpedit enabler...
     call "%GPEDIT_FILE%"
 
     echo [OK] gpedit enabler finished.
@@ -57,12 +58,33 @@ if exist "%GPEDIT_FILE%" (
 
 
 :: ----------------------------------------
-:: Run PowerShell script
+:: Run SSH Enabler
+:: ----------------------------------------
+
+if exist "%SSH_FILE%" (
+
+    echo [2/3] Enabling SSH...
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%SSH_FILE%"
+
+    echo [OK] SSH enabled.
+    echo.
+
+) else (
+
+    echo [WARN] enablessh.ps1 not found!
+    echo Skipping...
+    echo.
+)
+
+
+:: ----------------------------------------
+:: Run Main PowerShell Script
 :: ----------------------------------------
 
 if exist "%PS_FILE%" (
 
-    echo [2/2] Running main setup script...
+    echo [3/3] Running main setup script...
 
     powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_FILE%"
 
