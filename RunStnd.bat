@@ -2,8 +2,12 @@
 setlocal EnableExtensions
 title Master Setup No Installation Launcher
 
-:: 1. Check for Admin privileges
+:: ----------------------------------------
+:: Check for Admin privileges
+:: ----------------------------------------
+
 NET SESSION >nul 2>&1
+
 IF %ERRORLEVEL% EQU 0 (
     goto :RunScript
 ) ELSE (
@@ -12,20 +16,66 @@ IF %ERRORLEVEL% EQU 0 (
     exit /b
 )
 
+
 :RunScript
-:: 2. Get current folder path
+
+:: ----------------------------------------
+:: Get current folder
+:: ----------------------------------------
+
 set "CUR_DIR=%~dp0"
+
+set "GPEDIT_FILE=%CUR_DIR%gpedit-enabler.bat"
 set "PS_FILE=%CUR_DIR%Noinstallation.ps1"
 
+
 echo ==================================================
-echo   LAB AUTO-INSTALLER RUNNER
+echo     LAB MASTER SETUP LAUNCHER
 echo ==================================================
-echo Path: %CUR_DIR%
+echo Folder: %CUR_DIR%
 echo.
 
-:: 3. Run the PowerShell script
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_FILE%"
+
+:: ----------------------------------------
+:: Run gpedit enabler first
+:: ----------------------------------------
+
+if exist "%GPEDIT_FILE%" (
+
+    echo [1/2] Running gpedit enabler...
+    call "%GPEDIT_FILE%"
+
+    echo [OK] gpedit enabler finished.
+    echo.
+
+) else (
+
+    echo [WARN] gpedit-enabler.bat not found!
+    echo Skipping...
+    echo.
+)
+
+
+:: ----------------------------------------
+:: Run PowerShell script
+:: ----------------------------------------
+
+if exist "%PS_FILE%" (
+
+    echo [2/2] Running main setup script...
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_FILE%"
+
+    echo [OK] Main script finished.
+
+) else (
+
+    echo [ERROR] Noinstallation.ps1 not found!
+)
+
 
 echo.
-echo [DONE] If the PC didn't restart, check the log file.
+echo ==========================================
+echo DONE - Check logs if any problem occurred
+echo ==========================================
 pause
