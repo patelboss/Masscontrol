@@ -39,4 +39,4 @@ Restart-Service sshd
 Write-Host "SSH Setup Completed Successfully!" -ForegroundColor Green
 Write-Host "You can now connect using: ssh username@PC-IP" -ForegroundColor Cyan
 
-Pause
+#Pause
