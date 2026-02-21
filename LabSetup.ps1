@@ -120,7 +120,7 @@ $Apps = @(
     @{Name="RapidTyping"; File="rapidtyping.exe"; Args="/S"}
 
     @{Name="Soni Typing"; File="soni.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
-    @{Name="Sonma Typing"; File="sonma.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
+    @{Name="Sonma Typing"; File="sonma.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /CLOSEAPPLICATIONS"}
     @{Name="Tipp10 Typing"; File="tipp10.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
     @{Name="Telegram"; File="telegram.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
 )
