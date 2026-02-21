@@ -114,15 +114,15 @@ $Apps = @(
     @{Name="Google Chrome"; File="chrome.exe"; Args="/silent /install"}
     @{Name="Net Speed"; File="netspeed.msixbundle"; Args=""}
 
-    @{Name="Klavaro"; File="klavaro.exe"; Args="/S"}
-    @{Name="LocalSend"; File="localsend.exe"; Args="/S"}
+    @{Name="Klavaro"; File="klavaro.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
+    @{Name="LocalSend"; File="localsend.exe"; Args="/VERYSILENT"}
     @{Name="Notepad++"; File="npp.exe"; Args="/S"}
     @{Name="RapidTyping"; File="rapidtyping.exe"; Args="/S"}
 
-    @{Name="Soni Typing"; File="soni.exe"; Args="/S"}
-    @{Name="Sonma Typing"; File="sonma.exe"; Args="/S"}
-    @{Name="Tipp10 Typing"; File="tipp10.exe"; Args="/S"}
-    @{Name="Telegram"; File="telegram.exe"; Args="/S"}
+    @{Name="Soni Typing"; File="soni.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
+    @{Name="Sonma Typing"; File="sonma.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
+    @{Name="Tipp10 Typing"; File="tipp10.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
+    @{Name="Telegram"; File="telegram.exe"; Args="/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"}
 )
 
 # --------------------------------------------------
