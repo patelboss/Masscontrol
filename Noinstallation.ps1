@@ -124,21 +124,25 @@ catch {
 
 # Auto Login
 
+# Auto Login Fix for Windows 10/11
 try {
-
     $Winlogon = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    $Passless = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device"
 
-    Set-ItemProperty $Winlogon AutoAdminLogon "1"
-    Set-ItemProperty $Winlogon DefaultUserName $StudentUser
+    # Disable "Require Windows Hello" to allow auto-login
+    if (Test-Path $Passless) {
+        Set-ItemProperty $Passless "DevicePasswordLessBuildVersion" 0 -Type DWord
+    }
 
-    Remove-ItemProperty $Winlogon DefaultPassword -ErrorAction SilentlyContinue
-
-    Write-Log "Auto-login enabled" "Green"
-
+    Set-ItemProperty $Winlogon "AutoAdminLogon" "1"
+    Set-ItemProperty $Winlogon "DefaultUserName" $StudentUser
+    # Note: If StudentUser has no password, DefaultPassword should be an empty string
+    Set-ItemProperty $Winlogon "DefaultPassword" "" 
+    
+    Write-Log "Auto-login (Classic) enabled" "Green"
 }
 catch {
-
-    Write-Log "Auto-login failed" "Yellow"
+    Write-Log "Auto-login tweak failed" "Yellow"
 }
 
 
