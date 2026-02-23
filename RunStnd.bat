@@ -25,7 +25,6 @@ IF %ERRORLEVEL% EQU 0 (
 
 set "CUR_DIR=%~dp0"
 
-set "GPEDIT_FILE=%CUR_DIR%gpedit-enabler.bat"
 set "EableLan=%CUR_DIR%EableLan.reg"
 set "SSH_FILE=%CUR_DIR%enablessh.ps1"
 set "PS_FILE=%CUR_DIR%Noinstallation.ps1"
@@ -38,27 +37,8 @@ echo Folder: %CUR_DIR%
 echo.
 
 
-:: ----------------------------------------
-:: Run gpedit enabler
-:: ----------------------------------------
 
-if exist "%GPEDIT_FILE%" (
-
-    echo [1/4] Running gpedit enabler...
-    call "%GPEDIT_FILE%"
-
-    echo [OK] gpedit enabler finished.
-    echo.
-
-) else (
-
-    echo [WARN] gpedit-enabler.bat not found!
-    echo Skipping...
-    echo.
-)
-
-
-if exist "%GPEDIT_FILE%" (
+if exist "%EableLan%" (
 
     echo [2/4] Running Lan enabler...
     call "%EableLan%"
