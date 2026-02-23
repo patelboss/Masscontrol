@@ -1,69 +1,45 @@
 @echo off
 setlocal EnableExtensions
-title Master Setup No Installation Launcher
+title Lab Master Setup - Unified Launcher
 
 :: ----------------------------------------
-:: Check for Admin privileges
+:: Admin Check
 :: ----------------------------------------
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [!] Requesting Administrator privileges...
+NET SESSION >nul 2>&1
+IF %ERRORLEVEL% NEQ 0 (
+    echo [!] Relaunching as Admin...
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
 
-:RunScript
 set "CUR_DIR=%~dp0"
-cd /d "%CUR_DIR%"
-
-set "EableLan=%CUR_DIR%EableLan.reg"
-set "SSH_FILE=%CUR_DIR%enablessh.ps1"
+set "REG_FILE=%CUR_DIR%Eable.reg"
+set "SSH_FILE=%CUR_DIR%Enablessh.ps1"
 set "PS_FILE=%CUR_DIR%Noinstallation.ps1"
 
 echo ==================================================
-echo     LAB MASTER SETUP LAUNCHER
+echo     LAB MASTER SETUP (STABLE VERSION)
 echo ==================================================
-echo Folder: %CUR_DIR%
-echo.
 
-:: ----------------------------------------
-:: Run Lan Enabler (Registry)
-:: ----------------------------------------
-if exist "%EableLan%" (
-    echo [1/3] Importing LAN Registry settings...
-    :: Use reg import with /s for silent mode
-    reg import "%EableLan%" /s
-    echo [OK] Registry settings applied.
-) else (
-    echo [WARN] EableLan.reg not found! Skipping...
+:: 1. Registry Fixes (Silent)
+if exist "%REG_FILE%" (
+    echo [1/3] Applying Registry Tweaks...
+    regedit.exe /s "%REG_FILE%"
+    echo [OK] Done.
 )
-echo.
 
-:: ----------------------------------------
-:: Run SSH Enabler (PowerShell)
-:: ----------------------------------------
+:: 2. SSH Setup (Non-Blocking)
 if exist "%SSH_FILE%" (
-    echo [2/3] Enabling SSH...
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%SSH_FILE%"
-    echo [OK] SSH task completed.
-) else (
-    echo [WARN] enablessh.ps1 not found! Skipping...
+    echo [2/3] Enabling SSH Server...
+    powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%SSH_FILE%"
+    echo [OK] Done.
 )
-echo.
 
-:: ----------------------------------------
-:: Run Main PowerShell Script
-:: ----------------------------------------
+:: 3. Main Logic (Final Step - Includes Reboot)
 if exist "%PS_FILE%" (
-    echo [3/3] Running main setup script...
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_FILE%"
-    echo [OK] Main script finished.
+    echo [3/3] Running Main Standardization...
+    powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%PS_FILE%"
 ) else (
-    echo [ERROR] Noinstallation.ps1 not found!
+    echo [ERROR] %PS_FILE% not found!
+    pause
 )
-
-echo.
-echo ==========================================
-echo DONE - Check logs if any problem occurred
-echo ==========================================
-pause
