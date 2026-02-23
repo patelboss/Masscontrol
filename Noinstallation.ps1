@@ -1,6 +1,6 @@
 # ==================================================
 # LAB STANDARDIZATION SCRIPT (NO INSTALLS)
-# Users + AutoLogin + Sharing + Network Repair
+# Admin + Sharing + Network Repair + Remoting
 # Windows 10/11 | PowerShell 5.1+
 # ==================================================
 
@@ -11,17 +11,13 @@ $AdminPC     = "PC-01"
 $AdminUser   = "labadmin"
 $AdminPass   = "Lab@12345"
 
-$StudentUser = "student"
-
 $SecurePass = ConvertTo-SecureString $AdminPass -AsPlainText -Force
-
 $LogFile = "$PSScriptRoot\Lab_Repair_Log.txt"
 
 
 # ---------------- LOGGER ----------------
 
 Function Write-Log {
-
     param(
         [string]$Message,
         [string]$Color = "White"
@@ -32,7 +28,6 @@ Function Write-Log {
     Write-Host "[$Time] $Message" -ForegroundColor $Color
     "[$Time] $Message" | Out-File $LogFile -Append -Encoding UTF8
 }
-
 
 Write-Log "===== LAB STANDARDIZATION STARTED =====" "Cyan"
 
@@ -67,13 +62,11 @@ try {
 
 }
 catch {
-
     Write-Log "Admin setup error: $($_.Exception.Message)" "Red"
 }
 
 
-# Hide admin
-
+# Hide admin from login screen
 try {
 
     $HideKey = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
@@ -85,64 +78,29 @@ try {
     Set-ItemProperty $HideKey $AdminUser 0 -Type DWord
 
     Write-Log "Admin hidden" "Green"
-
 }
 catch {
-
     Write-Log "Admin hide failed" "Yellow"
 }
 
 
 # ==================================================
-# STEP 2: STUDENT USER
+# STEP 2: DISABLE AUTO-LOGIN (CLEANUP)
 # ==================================================
 
-Write-Log "Checking student account..." "Cyan"
+Write-Log "Ensuring auto-login is disabled..." "Cyan"
 
-try {
-
-    if (-not (Get-LocalUser -Name $StudentUser -ErrorAction SilentlyContinue)) {
-
-        New-LocalUser $StudentUser -NoPassword
-        Add-LocalGroupMember Users $StudentUser
-
-        Write-Log "Student created" "Green"
-    }
-    else {
-
-        Add-LocalGroupMember Users $StudentUser -ErrorAction SilentlyContinue
-
-        Write-Log "Student verified" "Green"
-    }
-
-}
-catch {
-
-    Write-Log "Student setup error" "Red"
-}
-
-
-# Auto Login
-
-# Auto Login Fix for Windows 10/11
 try {
     $Winlogon = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
-    $Passless = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device"
 
-    # Disable "Require Windows Hello" to allow auto-login
-    if (Test-Path $Passless) {
-        Set-ItemProperty $Passless "DevicePasswordLessBuildVersion" 0 -Type DWord
-    }
+    Set-ItemProperty $Winlogon "AutoAdminLogon" "0"
+    Remove-ItemProperty $Winlogon "DefaultUserName" -ErrorAction SilentlyContinue
+    Remove-ItemProperty $Winlogon "DefaultPassword" -ErrorAction SilentlyContinue
 
-    Set-ItemProperty $Winlogon "AutoAdminLogon" "1"
-    Set-ItemProperty $Winlogon "DefaultUserName" $StudentUser
-    # Note: If StudentUser has no password, DefaultPassword should be an empty string
-    Set-ItemProperty $Winlogon "DefaultPassword" "" 
-    
-    Write-Log "Auto-login (Classic) enabled" "Green"
+    Write-Log "Auto-login disabled" "Green"
 }
 catch {
-    Write-Log "Auto-login tweak failed" "Yellow"
+    Write-Log "Auto-login cleanup failed" "Yellow"
 }
 
 
@@ -160,10 +118,8 @@ try {
         -Type DWord
 
     Write-Log "Sharing policy fixed" "Green"
-
 }
 catch {
-
     Write-Log "Sharing policy error" "Yellow"
 }
 
@@ -180,10 +136,8 @@ try {
         Set-NetConnectionProfile -NetworkCategory Private -ErrorAction SilentlyContinue
 
     Write-Log "Network set to Private" "Green"
-
 }
 catch {
-
     Write-Log "Network profile error" "Yellow"
 }
 
@@ -206,15 +160,11 @@ $Services = @(
 foreach ($Svc in $Services) {
 
     try {
-
         Set-Service $Svc -StartupType Automatic -ErrorAction SilentlyContinue
         Start-Service $Svc -ErrorAction SilentlyContinue
-
         Write-Log "Service OK: $Svc" "Green"
-
     }
     catch {
-
         Write-Log "Service issue: $Svc" "Yellow"
     }
 }
@@ -232,10 +182,8 @@ try {
     netsh advfirewall firewall set rule group="File and Printer Sharing" new enable=Yes | Out-Null
 
     Write-Log "Firewall configured" "Green"
-
 }
 catch {
-
     Write-Log "Firewall error" "Yellow"
 }
 
@@ -249,16 +197,12 @@ Write-Log "Configuring remoting..." "Cyan"
 try {
 
     Enable-PSRemoting -Force -SkipNetworkProfileCheck
-
     Import-Module Microsoft.WSMan.Management -ErrorAction SilentlyContinue
-
     Set-Item WSMan:\localhost\Client\TrustedHosts -Value $AdminPC -Force
 
     Write-Log "Remoting enabled" "Green"
-
 }
 catch {
-
     Write-Log "Remoting error" "Yellow"
 }
 
@@ -275,10 +219,8 @@ try {
     nbtstat -RR | Out-Null
 
     Write-Log "Network cache cleared" "Green"
-
 }
 catch {
-
     Write-Log "Cache clean failed" "Yellow"
 }
 
