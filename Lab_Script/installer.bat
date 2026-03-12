@@ -11,7 +11,7 @@ NET SESSION >nul 2>&1 || (
 
 :: 2. Get the folder where THIS batch file is located
 set "CURRENT_DIR=%~dp0"
-set "PS_SCRIPT=%CURRENT_DIR%LabSetup.ps1"
+set "PS_SCRIPT=%CURRENT_DIR%setupfinal.ps1.ps1"
 
 echo Detected Folder: %CURRENT_DIR%
 echo Running: LabSetup.ps1...
@@ -21,4 +21,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%"
 
 echo.
 echo Process Finished.
-pause
+
+shutdown /r /t 300 /c "Lab Setup Complete. Rebooting to apply all changes."
+pause >nul
+shutdown /r /t 0
