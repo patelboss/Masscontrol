@@ -11,7 +11,7 @@ NET SESSION >nul 2>&1 || (
 
 :: 2. Get the folder where THIS batch file is located
 set "CURRENT_DIR=%~dp0"
-set "PS_SCRIPT=%CURRENT_DIR%setupfinal.ps1.ps1"
+set "PS_SCRIPT=%CURRENT_DIR%setupfinal.ps1"
 
 echo Detected Folder: %CURRENT_DIR%
 echo Running: LabSetup.ps1...
