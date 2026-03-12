@@ -40,6 +40,7 @@ Function Write-Log {
 }
 
 Write-Log "===== LAB STANDARDIZATION STARTED =====" "Cyan"
+Write-Host "The computer name is: $env:COMPUTERNAME"
 
 
 
@@ -439,7 +440,6 @@ Set-ItemProperty . -Name "DefaultUserName" -Value "Students"
 Get-ItemProperty . | Select-Object AutoAdminLogon, ForceAutoLogon, DefaultUserName
 
 
-
-
-
+    copy "%WALLSRC%" "%WALLDEST%" /y >nul
+)
 
