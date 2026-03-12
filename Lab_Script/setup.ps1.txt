@@ -7,9 +7,16 @@
 $AdminPC    = "PC-01"
 $User       = "labadmin"
 $Pass       = "Lab@12345"
-
+$AdminUser   = "labadmin"
+$AdminPass   = "Lab@12345"
+$LogFile = Join-Path $InstallDir "Lab_Repair_Log.txt"
+$BASE    = $PSScriptRoot
+$ICONS   = Join-Path $BASE "Icons"
+$LABDATA = Join-Path $BASE "Lab_Data"
+$WALLSRC = Join-Path $BASE "wallpaper.png"
+$PROGDIR  = "C:\Program Files\Lab_Data"
+$WALLDEST = "C:\wallpaper.png"
 $SecurePass = ConvertTo-SecureString $Pass -AsPlainText -Force
-
 $InstallDir = if ($PSScriptRoot) {
     $PSScriptRoot
 }
@@ -17,13 +24,7 @@ else {
     Split-Path -Parent $MyInvocation.MyCommand.Definition
 }
 
-$AdminPC     = "PC-01"
-
-$AdminUser   = "labadmin"
-$AdminPass   = "Lab@12345"
-
 #$LogFile = "$PSScriptRoot\Lab_Repair_Log.txt"
-$LogFile = Join-Path $InstallDir "Lab_Repair_Log.txt"
 
 # ---------------- LOGGER ----------------
 
@@ -41,6 +42,69 @@ Function Write-Log {
 
 Write-Log "===== LAB STANDARDIZATION STARTED =====" "Cyan"
 Write-Host "The computer name is: $env:COMPUTERNAME"
+
+
+Write-Host ""
+Write-Host "======================================"
+Write-Host "   RUNNING LAB DEPLOYMENT"
+Write-Host "======================================"
+
+==================================================
+
+CLEAN DESKTOP (Public and Current User)
+
+==================================================
+
+Write-Host "[1/8] Cleaning Desktop Icons..."
+
+Remove-Item "$env:PUBLIC\Desktop*" -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:USERPROFILE\Desktop*" -Force -ErrorAction SilentlyContinue
+
+==================================================
+
+COPY ICONS
+
+==================================================
+
+if (Test-Path $ICONS) {
+
+Write-Host "[2/8] Deploying Lab Icons..."  
+
+Copy-Item "$ICONS\*" "$env:PUBLIC\Desktop\" -Recurse -Force -ErrorAction SilentlyContinue
+
+}
+
+==================================================
+
+COPY LAB DATA
+
+==================================================
+
+if (Test-Path $LABDATA) {
+
+Write-Host "[3/8] Copying Lab Data to Program Files..."  
+
+if (!(Test-Path $PROGDIR)) {  
+    New-Item -ItemType Directory -Path $PROGDIR | Out-Null  
+}  
+
+Copy-Item "$LABDATA\*" $PROGDIR -Recurse -Force -ErrorAction SilentlyContinue
+
+}
+
+==================================================
+
+COPY WALLPAPER FILE ONLY
+
+==================================================
+
+Write-Host "[7/8] Copying Wallpaper to C:..."
+
+if (Test-Path $WALLSRC) {
+
+Copy-Item $WALLSRC $WALLDEST -Force
+
+}
 
 
 
