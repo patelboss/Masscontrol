@@ -9,7 +9,6 @@ $User       = "labadmin"
 $Pass       = "Lab@12345"
 $AdminUser   = "labadmin"
 $AdminPass   = "Lab@12345"
-$LogFile = Join-Path $InstallDir "Lab_Repair_Log.txt"
 $BASE    = $PSScriptRoot
 $ICONS   = Join-Path $BASE "Icons"
 $LABDATA = Join-Path $BASE "Lab_Data"
@@ -18,11 +17,10 @@ $PROGDIR  = "C:\Program Files\Lab_Data"
 $WALLDEST = "C:\wallpaper.png"
 $SecurePass = ConvertTo-SecureString $Pass -AsPlainText -Force
 $InstallDir = if ($PSScriptRoot) {
-    $PSScriptRoot
-}
+    $PSScriptRoot}
 else {
-    Split-Path -Parent $MyInvocation.MyCommand.Definition
-}
+    Split-Path -Parent $MyInvocation.MyCommand.Definition}
+$LogFile = Join-Path $InstallDir "Lab_Repair_Log.txt"
 
 #$LogFile = "$PSScriptRoot\Lab_Repair_Log.txt"
 
@@ -49,22 +47,22 @@ Write-Host "======================================"
 Write-Host "   RUNNING LAB DEPLOYMENT"
 Write-Host "======================================"
 
-==================================================
+#==================================================
 
-CLEAN DESKTOP (Public and Current User)
+#CLEAN DESKTOP (Public and Current User)
 
-==================================================
+#==================================================
 
 Write-Host "[1/8] Cleaning Desktop Icons..."
 
-Remove-Item "$env:PUBLIC\Desktop*" -Force -ErrorAction SilentlyContinue
-Remove-Item "$env:USERPROFILE\Desktop*" -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:PUBLIC\Desktop\*" -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:USERPROFILE\Desktop\*" -Force -ErrorAction SilentlyContinue
 
-==================================================
+#==================================================
 
-COPY ICONS
+#COPY ICONS
 
-==================================================
+#==================================================
 
 if (Test-Path $ICONS) {
 
@@ -74,11 +72,11 @@ Copy-Item "$ICONS\*" "$env:PUBLIC\Desktop\" -Recurse -Force -ErrorAction Silentl
 
 }
 
-==================================================
+#==================================================
 
-COPY LAB DATA
+#COPY LAB DATA
 
-==================================================
+#==================================================
 
 if (Test-Path $LABDATA) {
 
@@ -92,11 +90,10 @@ Copy-Item "$LABDATA\*" $PROGDIR -Recurse -Force -ErrorAction SilentlyContinue
 
 }
 
-==================================================
+#==================================================
 
-COPY WALLPAPER FILE ONLY
-
-==================================================
+#COPY WALLPAPER FILE ONLY
+#==================================================
 
 Write-Host "[7/8] Copying Wallpaper to C:..."
 
