@@ -45,10 +45,89 @@ Write-Host "The computer name is: $env:COMPUTERNAME"
 
 
 
+# ==================================================
+# BASE DIRECTORY
+# ==================================================
+
+$BASE     = $PSScriptRoot
+$ICONS    = Join-Path $BASE "Icons"
+$LABDATA  = Join-Path $BASE "Lab_Data"
+$WALLSRC  = Join-Path $BASE "wallpaper.png"
+$PROGDIR  = "C:\Program Files\Lab_Data"
+$WALLDEST = "C:\wallpaper.png"
+
+# ==================================================
+# ADMIN CHECK
+# ==================================================
+
+$IsAdmin = ([Security.Principal.WindowsPrincipal] `
+[Security.Principal.WindowsIdentity]::GetCurrent()
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-not $IsAdmin) {
+
+    Start-Process powershell `
+    "-ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
+    -Verb RunAs
+
+    exit
+}
+
+Write-Host ""
+Write-Host "======================================"
+Write-Host "   RUNNING LAB DEPLOYMENT"
+Write-Host "======================================"
+# ==================================================
+# COPY WALLPAPER
+# ==================================================
+
+Write-Host "[Step 1] Copying Wallpaper to C:\..."
+
+if (Test-Path $WALLSRC) {
+
+    Copy-Item $WALLSRC $WALLDEST -Force
+}
+
+# ==================================================
+# CLEAN DESKTOP
+# ==================================================
+
+Write-Host "[Step-2] Cleaning Desktop Icons..."
+
+Remove-Item "$env:PUBLIC\Desktop\*" -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:USERPROFILE\Desktop\*" -Force -ErrorAction SilentlyContinue
+
+# ==================================================
+# COPY ICONS
+# ==================================================
+
+if (Test-Path $ICONS) {
+
+    Write-Host "[Step-3] Deploying Lab Icons..."
+
+    Copy-Item "$ICONS\*" "$env:PUBLIC\Desktop\" -Recurse -Force
+}
+
+# ==================================================
+# COPY LAB DATA
+# ==================================================
+
+if (Test-Path $LABDATA) {
+
+    Write-Host "[Step-4] Copying Lab Data to Program Files..."
+
+    if (!(Test-Path $PROGDIR)) {
+        New-Item $PROGDIR -ItemType Directory | Out-Null
+    }
+
+    Copy-Item "$LABDATA\*" $PROGDIR -Recurse -Force
+}
+
+
 # --------------------------------------------------
 # STEP 1: ENABLE REMOTING & SIDELOADING
 # --------------------------------------------------
-Write-Log "STEP 1: Configuring Remoting & Sideloading..." "Cyan"
+Write-Log "[Step-5]: Configuring Remoting & Sideloading..." "Cyan"
 
 try {
 
@@ -103,7 +182,7 @@ try {
 }
 catch {
 
-    Write-Log "WARN STEP 1: $($_.Exception.Message)" "Yellow"
+    Write-Log "WARN [Step-5]: $($_.Exception.Message)" "Yellow"
 }
 
 # --------------------------------------------------
@@ -144,7 +223,7 @@ $Apps = @(
 # --------------------------------------------------
 # STEP 3: PRE-CHECK
 # --------------------------------------------------
-Write-Log "STEP 2: Checking installation files..." "Cyan"
+Write-Log "[Step-6]: Checking installation files..." "Cyan"
 
 $MissingCount = 0
 
@@ -167,7 +246,7 @@ if ($MissingCount -gt 0) {
 # --------------------------------------------------
 # STEP 4: INSTALL
 # --------------------------------------------------
-Write-Log "STEP 3: Installing Software..." "Cyan"
+Write-Log "[Step-7]: Installing Software..." "Cyan"
 
 foreach ($App in $Apps) {
 
@@ -227,7 +306,7 @@ foreach ($App in $Apps) {
 # STEP 1: ADMIN USER
 # ==================================================
 
-Write-Log "Checking admin account..." "Cyan"
+Write-Log "[Step-8]Checking admin account..." "Cyan"
 
 try {
 
@@ -279,7 +358,7 @@ catch {
 # STEP 2: DISABLE AUTO-LOGIN (CLEANUP)
 # ==================================================
 
-Write-Log "Ensuring auto-login is disabled..." "Cyan"
+Write-Log "[Step-9]Ensuring auto-login is disabled..." "Cyan"
 
 try {
     $Winlogon = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
@@ -299,7 +378,7 @@ catch {
 # STEP 3: SHARING POLICY
 # ==================================================
 
-Write-Log "Fixing sharing policy..." "Cyan"
+Write-Log "[Step-10]Fixing sharing policy..." "Cyan"
 
 try {
 
@@ -319,7 +398,7 @@ catch {
 # STEP 4: NETWORK PROFILE
 # ==================================================
 
-Write-Log "Setting network to Private..." "Cyan"
+Write-Log "[Step-11]Setting network to Private..." "Cyan"
 
 try {
 
@@ -337,7 +416,7 @@ catch {
 # STEP 5: REQUIRED SERVICES
 # ==================================================
 
-Write-Log "Fixing services..." "Cyan"
+Write-Log "[Step-12]Fixing services..." "Cyan"
 
 $Services = @(
     "fdPHost",
@@ -365,7 +444,7 @@ foreach ($Svc in $Services) {
 # STEP 6: FIREWALL RULES
 # ==================================================
 
-Write-Log "Enabling firewall rules..." "Cyan"
+Write-Log "[Step-13]Enabling firewall rules..." "Cyan"
 
 try {
 
@@ -383,7 +462,7 @@ catch {
 # STEP 7: REMOTING
 # ==================================================
 
-Write-Log "Configuring remoting..." "Cyan"
+Write-Log "[Step-14]Configuring remoting..." "Cyan"
 
 try {
 
@@ -402,7 +481,7 @@ catch {
 # STEP 8: NETWORK CACHE CLEAN
 # ==================================================
 
-Write-Log "Clearing network cache..." "Cyan"
+Write-Log "[Step-15]Clearing network cache..." "Cyan"
 
 try {
 
@@ -418,7 +497,7 @@ catch {
 
 
 #My Command 
-Write-Log "Running Your Commands" "Yellow" 
+Write-Log "[Step-16]Running Your Commands" "Yellow" 
 
 cd "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 ls
@@ -443,3 +522,18 @@ Get-ItemProperty . | Select-Object AutoAdminLogon, ForceAutoLogon, DefaultUserNa
     copy "%WALLSRC%" "%WALLDEST%" /y >nul
 )
 
+
+
+# ==================================================
+# RESTART
+# ==================================================
+
+Write-Host ""
+Write-Host "Setup Complete. The system will restart in 30 seconds."
+Write-Host "Press any key to restart immediately."
+
+shutdown /r /t 30 /c "Lab Setup Complete. Rebooting to apply all changes."
+
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+#shutdown /r /t 0
