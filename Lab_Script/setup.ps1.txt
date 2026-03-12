@@ -22,8 +22,8 @@ $AdminPC     = "PC-01"
 $AdminUser   = "labadmin"
 $AdminPass   = "Lab@12345"
 
-$LogFile = "$PSScriptRoot\Lab_Repair_Log.txt"
-
+#$LogFile = "$PSScriptRoot\Lab_Repair_Log.txt"
+$LogFile = Join-Path $InstallDir "Lab_Repair_Log.txt"
 
 # ---------------- LOGGER ----------------
 
@@ -438,8 +438,4 @@ Set-ItemProperty . -Name "DefaultUserName" -Value "Students"
 
 
 Get-ItemProperty . | Select-Object AutoAdminLogon, ForceAutoLogon, DefaultUserName
-
-
-    copy "%WALLSRC%" "%WALLDEST%" /y >nul
-)
 
